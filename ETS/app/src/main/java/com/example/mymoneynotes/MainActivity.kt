@@ -676,12 +676,21 @@ fun FinancialSummaryChart(
 ) {
     val total = totalIncome + totalExpense
 
-    val incomePercent = if (total > 0) (totalIncome / total) else 0.0
-    val expensePercent = if (total > 0) (totalExpense / total) else 0.0
+    // 🚨 HANDLE DATA KOSONG
+    if (total == 0.0) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text("Belum ada data")
+        }
+        return
+    }
 
-    // ✅ FIX: pastikan weight tidak pernah 0
-    val safeIncome = if (incomePercent > 0) incomePercent.toFloat() else 0.0001f
-    val safeExpense = if (expensePercent > 0) expensePercent.toFloat() else 0.0001f
+    val incomePercent = (totalIncome / total).toFloat()
+    val expensePercent = (totalExpense / total).toFloat()
 
     val numberFormat = NumberFormat.getPercentInstance().apply {
         maximumFractionDigits = 0
@@ -693,7 +702,6 @@ fun FinancialSummaryChart(
             .padding(16.dp)
     ) {
 
-        // 🔝 Label atas (judul + persen)
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
@@ -719,7 +727,6 @@ fun FinancialSummaryChart(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // 📊 BAR UTAMA
         Box(
             modifier = Modifier
                 .fillMaxWidth()
@@ -728,19 +735,17 @@ fun FinancialSummaryChart(
         ) {
             Row(modifier = Modifier.fillMaxSize()) {
 
-                // 🟢 Pemasukan
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .weight(safeIncome)
+                        .weight(incomePercent)
                         .background(Color(0xFF5B913B))
                 )
 
-                // 🔴 Pengeluaran
                 Box(
                     modifier = Modifier
                         .fillMaxHeight()
-                        .weight(safeExpense)
+                        .weight(expensePercent)
                         .background(Color.Red)
                 )
             }
@@ -775,65 +780,6 @@ fun formatCategoryName(categoryName: String): String {
         word.lowercase().replaceFirstChar { it.uppercase() }
     }
 }
-
-//@Composable
-//fun SortingAndFilteringSection(
-//    currentSortOption: SortOption,
-//    currentFilterOption: FilterOption,
-//    searchQuery: String,
-//    onSortOptionSelected: (SortOption) -> Unit,
-//    onFilterOptionSelected: (FilterOption) -> Unit,
-//    onSearchQueryChanged: (String) -> Unit,
-//    showStatistics: Boolean,
-//    onToggleStatistics: (Boolean) -> Unit
-//){
-//    var sortExpanded by remember { mutableStateOf(false) }
-//    var filterExpanded by remember { mutableStateOf(false) }
-//
-//    Surface(
-//        modifier = Modifier.fillMaxWidth(),
-//        color = MaterialTheme.colorScheme.surfaceVariant,
-//        shape = RoundedCornerShape(8.dp)
-//    ) {
-//        Column(
-//            modifier = Modifier.padding(16.dp)
-//        ) {
-//            OutlinedTextField(
-//                value = searchQuery,
-//                onValueChange = onSearchQueryChanged,
-//                modifier = Modifier.fillMaxWidth(),
-//                placeholder = { Text("Cari...") },
-//                leadingIcon = {
-//                    Icon(
-//                        imageVector = Icons.Default.Search,
-//                        contentDescription = "Search"
-//                    )
-//                },
-//                trailingIcon = {
-//                    if(searchQuery.isNotEmpty()){
-//                        IconButton(onClick = {onSearchQueryChanged("")}) {
-//                            Icon(
-//                                imageVector = Icons.Default.Clear,
-//                                contentDescription = "Clear Search"
-//                            )
-//                        }
-//                    }
-//                },
-//                singleLine = true
-//            )
-//
-//            Spacer(modifier = Modifier.height(16.dp))
-//
-//            Row(
-//                modifier = Modifier.fillMaxWidth(),
-//                horizontalArrangement = Arrangement.SpaceBetween
-//            ) {
-//                Column {  }
-//            }
-//        }
-//    }
-//}
-
 @Composable
 fun TransactionItem(
     transaction: Transaction,
@@ -963,7 +909,7 @@ fun TransactionList(
         items(transactions) { transaction ->
             TransactionItem(
                 transaction = transaction,
-                onDelete = {onDelete(transaction.id)}
+                onDelete = {onDelete(transaction.id)}   
             )
         }
     }
